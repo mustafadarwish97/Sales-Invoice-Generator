@@ -11,8 +11,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import sig.model.FileType;
 import sig.model.InvoiceHeader;
@@ -144,18 +147,26 @@ public class ActionHandler implements ActionListener {
     }
 
     private void saveFile() {
-        
-        JFileChooser fc = new JFileChooser();
-        JFileChooser fc2 = new JFileChooser();
-        int resultHeader = fc.showSaveDialog(null);
-        int resultItem = fc2.showSaveDialog(null);
-        
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new FileNameExtensionFilter("CSV File", ".csv"));
+        int result = chooser.showSaveDialog(null);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            JOptionPane.showMessageDialog(null, "File save cancelled", "Warning", JOptionPane.OK_OPTION);
+            return;
+        }
+        String headerFilePath = chooser.getSelectedFile().getAbsolutePath();
+        int itemsResult = chooser.showSaveDialog(null);
+        if (itemsResult != JFileChooser.APPROVE_OPTION) {
+            JOptionPane.showMessageDialog(null, "File save cancelled", "Warning", JOptionPane.OK_OPTION);
+            return;
+        }
+        String itemsFilePath = chooser.getSelectedFile().getAbsolutePath();
+
         FileWriter csvWriter = null;
         FileWriter csvWriter2 = null;
-        
         try {
-            csvWriter = new FileWriter(new File(headPath));
-            csvWriter2 = new FileWriter(new File(itemsPath));
+            csvWriter = new FileWriter(new File(headerFilePath + ".csv"));
+            csvWriter2 = new FileWriter(new File(itemsFilePath + ".csv"));
             for (InvoiceHeader rowData : header) {
                 csvWriter.append(String.valueOf(rowData.getNum()));
                 csvWriter.append(",");
@@ -172,7 +183,9 @@ public class ActionHandler implements ActionListener {
                     csvWriter2.append(",");
                     csvWriter2.append(String.valueOf(item.getCount()));
                     csvWriter2.append("\n");
+
                 }
+
             }
             csvWriter2.flush();
             csvWriter2.close();
@@ -181,7 +194,7 @@ public class ActionHandler implements ActionListener {
             JOptionPane.showMessageDialog(null, "File saved successfully", "Success", JOptionPane.OK_OPTION);
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(ActionHandler.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(null, "File Failed to save", "Error", JOptionPane.OK_OPTION);
 
         } finally {
@@ -189,7 +202,7 @@ public class ActionHandler implements ActionListener {
                 csvWriter.close();
                 csvWriter2.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Logger.getLogger(ActionHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
