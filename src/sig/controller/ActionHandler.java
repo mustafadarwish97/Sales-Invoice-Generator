@@ -80,6 +80,9 @@ public class ActionHandler implements ActionListener {
             for (int i = rows - 1; i >= 0; i--) {
                 model.removeRow(i);
             }
+            for (int i = 0; i <= header.size() - 1; i++) {
+                model3.setValueAt(i + 1, i, 0);
+            }
         } else {
             if (InvoiceJFrame.headerTable.getRowCount() == 0) {
                 JOptionPane.showMessageDialog(null, "Empty Table", "Error Message", JOptionPane.ERROR_MESSAGE);
@@ -167,8 +170,9 @@ public class ActionHandler implements ActionListener {
         try {
             csvWriter = new FileWriter(new File(headerFilePath + ".csv"));
             csvWriter2 = new FileWriter(new File(itemsFilePath + ".csv"));
-            for (InvoiceHeader rowData : header) {
-                csvWriter.append(String.valueOf(rowData.getNum()));
+            for (int i = 0; i <= header.size() - 1; i++) {
+                InvoiceHeader rowData = header.get(i);
+                csvWriter.append(String.valueOf(i+1));
                 csvWriter.append(",");
                 csvWriter.append(rowData.getCustomer());
                 csvWriter.append(",");
@@ -229,14 +233,16 @@ public class ActionHandler implements ActionListener {
             String[] lines1 = array1.toString().split(",");
             String[] invoiceRows = lines1;
             if (type == FileType.Header) {
-                header.add(new InvoiceHeader(                                   // creates new header obj and add it to header arraylist and adding it to model
-                        Integer.parseInt(invoiceRows[0]),                       //parse first element (header num to int)
-                        invoiceRows[2],                                         //convert string date from sheet to Date type
+                // creates new header obj and add it to header arraylist and adding it to model
+                header.add(new InvoiceHeader(
+                        header.size()+1, // first element (header num to int)
+                        invoiceRows[2],//convert string date from sheet to Date type
                         invoiceRows[1]));//
                 model.addRow(invoiceRows);
 
             } else {
-                header.get(Integer.parseInt(invoiceRows[0]) - 1).getItems()     //getting header item with item invoice number and adding new item to header item list
+                //getting header item with item invoice number and adding new item to header item list
+                header.get(Integer.parseInt(invoiceRows[0]) - 1).getItems()
                         .add(new InvoiceItem(
                                 invoiceRows[1],
                                 Double.valueOf(invoiceRows[2]),
